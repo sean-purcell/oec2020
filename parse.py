@@ -47,10 +47,16 @@ def parse_row(row):
 def parse_csv(csv_file):
     # return ([HourOut]], [HourIn])
 
-    reader = csv.reader(csv_file)
+    def inner_parse(file):
+        reader = csv.reader(csv_file)
 
-    init_state = list(map(parse_row, itertools.islice(reader, 3)))
-    hour_inputs = list(map(parse_row, [x for x in reader if x[0]]))
+        init_state = list(map(parse_row, itertools.islice(reader, 3)))
+        hour_inputs = list(map(parse_row, [x for x in reader if x[0]]))
 
-    return init_state, hour_inputs
+        return init_state, hour_inputs
 
+    if isinstance(csv_file, str):
+        with open(csv_file) as csv_file:
+            return inner_parse(csv_file)
+    else:
+        return inner_parse(csv_file)
