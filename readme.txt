@@ -16,3 +16,5 @@ so we assign negative weight to cost and co2, and positive weight to green
 production).
 
 Our outputs for each of the 4 provided inputs are in output/.
+
+The report is in report.pdf, and the presentation is in presentation.pdf.
