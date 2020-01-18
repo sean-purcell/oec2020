@@ -1,4 +1,4 @@
-import sys
+import sys:!
 import os
 import csv
 
@@ -8,6 +8,9 @@ import config
 import optimizer
 
 optimize_co2 = (os.environ.get('OPT_CO2', '1') != '0')
+
+def clamp(value, minvalue, maxvalue):
+    return max(minvalue, min(value, maxvalue))
 
 def gen_outrow(inrow, power_row, sold, rate):
     co2_out = sum(
@@ -43,6 +46,15 @@ def print_summary(rows):
     print('Total weighted price-diff: {:,}'.format(round(price, 2)))
     # co2
 
+    # Check for blackouts
+    def did_blackout(outrow):
+        print(outrow)
+        print(outrow.mw_diff)
+        return outrow.mw_diff < 0
+
+    n_blackouts = sum(map(did_blackout, rows))
+    print('Blackouts: {}'.format(n_blackouts))
+
 def main():
     (init, hours) = parse.parse_csv(open(sys.argv[1], 'r'))
     writer = csv.writer(open(sys.argv[2], "w"))
@@ -50,10 +62,30 @@ def main():
     season = config.get_season(hours[0])
     nuclear = init[-1].mw_drawn.nuclear
 
+    def target_nuclear(inrow):
+        # This is a control system to decide how much nuclear power we want.
+
+        # Using the provided numbers, hydro is optimal.
+        # But nuclear is second-best, and nuclear power supply is inelastic.
+        # So we want to use lots of nuclear, but only after we use as much
+        # hydro as possible.
+
+        # If we're using 80% as much power this week, adjust estimates down.
+        adjust_factor = max(1, inrow.mw_available.total / inrow.historical_drawn[0])
+        predicted_drawn = [drawn * adjust_factor for drawn in inrow.historical_drawn]
+        avg_draw = sum(predicted_drawn)/len(predicted_drawn)
+
+        # Hydro appears to be pretty stable.
+        predicted_needed = max(0, avg_draw - inrow.mw_available.hydro)
+
+        print('Aiming for {} nuclear power'.format(predicted_needed))
+        return predicted_needed
+
     outrows = []
     print('Optimize: {}'.format(optimize_co2))
     for hour in hours:
         rate = config.consumer_rate(season, hour.time)
+        nuclear = clamp(target_nuclear(hour), nuclear * 0.99, nuclear*1.01)
         power_row, sold = optimizer.optimize(hour, nuclear, {'cost': -1, 'co2': 0, 'green': 0}, debug=False)
         outrow = gen_outrow(hour, power_row, sold, rate)
         if outrow.price_diff > 0 and optimize_co2:
