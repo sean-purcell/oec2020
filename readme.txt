@@ -11,3 +11,5 @@ Then the code can be run as
 $ python3 main.py <in.csv> <out.csv> [<cost weighting> <co2 weighting> <green weighting>]
 
 The weightings are optional, and override the cost function we picked.
+
+Our outputs for each of the 4 provided inputs are in output/.
