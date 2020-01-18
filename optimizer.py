@@ -41,6 +41,7 @@ def optimize(inrow, nuclear, value_func, debug=True):
     A[i][COLS-1] = -1
     b[i] = 0
     i += 1
+    c[COLS-1] = value_func['cost'] * inrow.mw_sellable_price * -1000
 
     if debug:
         print(A)
@@ -48,7 +49,7 @@ def optimize(inrow, nuclear, value_func, debug=True):
         print(c)
 
     result = lp.LPSolver(A, b, c).solve()
-    result2 = spo.linprog(c, A, b)
+    result2 = spo.linprog(-c, A, b)
     print(result)
     print(result2)
     return result
