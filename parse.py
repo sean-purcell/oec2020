@@ -39,7 +39,14 @@ def parse_time(time_string):
     return int(time_string.split(':')[0])
 
 def parse_row(row):
-    # row: [str]
+    """
+    Parameters:
+        row: [str], a row directly out an input CSV file
+    Output:
+        Either an HourOut or an HourIn, depending on whether the row is an
+        input or output row. Note that initialization rows are considered
+        output rows, since the format is the same.
+    """
     float_or_zero = parse_or(float, 0.0)
 
     time = parse_time(row[1])
@@ -55,7 +62,13 @@ def parse_row(row):
         return HourIn(*args)
 
 def parse_csv(csv_file):
-    # return ([HourOut]], [HourIn])
+    """ Returns:
+        A 2-tuple: (hour_inits, hour_ins):
+            |hour_inits|: [HourOut] , three initial states of the grid
+            |hour_ins|: [HourIn], storing each subsequent hour's corresponding
+            input row. Be careful not to look into the future! That would be
+            cheating.
+    """
 
     def inner_parse(file):
         reader = csv.reader(csv_file)
