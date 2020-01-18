@@ -48,8 +48,6 @@ def print_summary(rows):
 
     # Check for blackouts
     def did_blackout(outrow):
-        print(outrow)
-        print(outrow.mw_diff)
         return outrow.mw_diff < 0
 
     n_blackouts = sum(map(did_blackout, rows))
