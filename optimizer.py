@@ -3,6 +3,7 @@ import scipy.optimize as spo
 
 import linear_programming as lp
 import config
+import parse
 
 def optimize(inrow, nuclear, value_func, debug=True):
     ROWS = 16
@@ -55,4 +56,8 @@ def optimize(inrow, nuclear, value_func, debug=True):
         print(b)
         print(c)
         print(result)
-    return result
+    # Create PowerRow
+    used = {key: result[0][i] for i, key in enumerate(['solar', 'wind', 'hydro', 'gas', 'biofuel', 'buyable'])}
+    used['nuclear'] = nuclear
+    used['total'] = inrow.mw_available.total
+    return (parse.PowerRow(**used), result[0][-1])
