@@ -22,7 +22,7 @@ class LPSolver(object):
             self.B[i] = n + i
             self.D[i][n] = -1
             self.D[i][n+1] = b[i]
-        for i in range(n):
+        for j in range(n):
             self.N[j] = j
             self.D[m][j] = -c[j]
         self.N[n] = -1
