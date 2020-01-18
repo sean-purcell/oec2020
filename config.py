@@ -7,9 +7,9 @@ EMISSIONS = {
         'solar': 105,
         'wind' : 13,
         'hydro' : 4,
-        'coal' : 909,
+        'gas' : 909,
         'biofuel' : 58,
-        'buy' : 258,
+        'buyable' : 258,
 }
 
 PRICES = {
@@ -17,7 +17,7 @@ PRICES = {
         'solar': 481,
         'wind' : 133,
         'hydro' : 57,
-        'coal' : 140,
+        'gas' : 140,
         'biofuel' : 131,
-        'buy' : 160,
+        'buyable' : 160,
 }

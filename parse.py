@@ -32,7 +32,7 @@ def parse_csv(csv_file):
 
     reader = csv.reader(csv_file)
 
-    init_state = list(itertools.islice(reader, 3))
+    init_state = list(map(parse_row, itertools.islice(reader, 3)))
     hour_inputs = list(map(parse_row, [x for x in reader if x[0]]))
 
     return init_state, hour_inputs

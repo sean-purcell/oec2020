@@ -94,7 +94,7 @@ class LPSolver(object):
         if D[r][n+1] < -EPS:
             self.pivot(r, n)
             if (not self.simplex(2)) or (D[m+1][n+1] < -EPS):
-                return inf
+                return (np.zeros((m)), inf)
             for i in range(m):
                 if B[i] == -1:
                     s = 0
@@ -106,7 +106,7 @@ class LPSolver(object):
         for i in range(m):
             if B[i] < n:
                 x[B[i]] = D[i][n+1]
-        return (x, D[m][n+1] if ok else inf)
+        return (x, (D[m][n+1] if ok else inf))
 
 if __name__ == '__main__':
     A = np.array([[50, 24], [30, 33], [-1, 0], [-1, 0]])
