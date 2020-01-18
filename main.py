@@ -84,13 +84,8 @@ def main():
     for hour in hours:
         rate = config.consumer_rate(season, hour.time)
         nuclear = clamp(target_nuclear(hour), nuclear * 0.99, nuclear*1.01)
-        power_row, sold = optimizer.optimize(hour, nuclear, {'cost': -1, 'co2': 0, 'green': 0}, debug=False)
+        power_row, sold = optimizer.optimize(hour, nuclear, {'cost': -1, 'co2': -2, 'green': 0}, debug=False)
         outrow = gen_outrow(hour, power_row, sold, rate)
-        if outrow.price_diff > 0 and optimize_co2:
-            # we broke even, optimize for low CO2 and high green usage
-            power_row, sold = optimizer.optimize(hour, nuclear, {'cost': 0, 'co2': -1000, 'green': 1}, profit=0, rate=rate, debug=False)
-            outrow = gen_outrow(hour, power_row, sold, rate)
-        writer.writerow(outrow.to_row())
         outrows.append(outrow)
 
     print_summary(outrows)
