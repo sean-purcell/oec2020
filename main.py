@@ -7,7 +7,7 @@ import parse
 import config
 import optimizer
 
-optimize_co2 = os.environ["OPT_CO2"] == '1'
+optimize_co2 = (os.environ.get('OPT_CO2', '1') != '0')
 
 def gen_outrow(inrow, power_row, sold, rate):
     co2_out = sum(
@@ -51,7 +51,7 @@ def main():
     nuclear = init[-1].mw_drawn.nuclear
 
     outrows = []
-    print(optimize_co2)
+    print('Optimize: {}'.format(optimize_co2))
     for hour in hours:
         rate = config.consumer_rate(season, hour.time)
         power_row, sold = optimizer.optimize(hour, nuclear, {'cost': -1, 'co2': 0, 'green': 0}, debug=False)
