@@ -1,10 +1,13 @@
 import sys
+import os
 import csv
 
 import config
 import parse
 import config
 import optimizer
+
+optimize_co2 = os.environ["OPT_CO2"] == '1'
 
 def gen_outrow(inrow, power_row, sold, rate):
     co2_out = sum(
@@ -42,22 +45,21 @@ def print_summary(rows):
 
 def main():
     (init, hours) = parse.parse_csv(open(sys.argv[1], 'r'))
-    writer = csv.writer(sys.stdout)
+    writer = csv.writer(open(sys.argv[2], "w"))
 
     season = config.get_season(hours[0])
     nuclear = init[-1].mw_drawn.nuclear
 
-    value_func = {
-        'cost': float(sys.argv[2]),
-        'co2': float(sys.argv[3]),
-        'green': float(sys.argv[4]),
-    }
-
     outrows = []
+    print(optimize_co2)
     for hour in hours:
         rate = config.consumer_rate(season, hour.time)
-        power_row, sold = optimizer.optimize(hour, rate, nuclear, value_func, debug=False)
+        power_row, sold = optimizer.optimize(hour, nuclear, {'cost': -1, 'co2': 0, 'green': 0}, debug=False)
         outrow = gen_outrow(hour, power_row, sold, rate)
+        if outrow.price_diff > 0 and optimize_co2:
+            # we broke even, optimize for low CO2 and high green usage
+            power_row, sold = optimizer.optimize(hour, nuclear, {'cost': 0, 'co2': -1000, 'green': 1}, profit=0, rate=rate, debug=False)
+            outrow = gen_outrow(hour, power_row, sold, rate)
         writer.writerow(outrow.to_row())
         outrows.append(outrow)
 
