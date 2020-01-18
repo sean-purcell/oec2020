@@ -57,7 +57,7 @@ def parse_row(row):
         return HourOut(*args)
     elif row[0] == '1':
         temps = list(map(float_or_zero, row[11:16]))
-        historical_drawn = list(map(float_or_zero, row[19:24]))
+        historical_drawn = list(map(float_or_zero, row[20:25]))
         args = [time, mw, temps] + list(map(float_or_zero, row[15:20])) + [historical_drawn]
         return HourIn(*args)
 
