@@ -4,8 +4,28 @@ import scipy.optimize as spo
 import linear_programming as lp
 import config
 
-# rate: cost charged to Ontario consumers in cents/kWh, can change hourly
 def optimize(inrow, rate, nuclear, value_func, debug=True):
+    """
+    Parameters:
+        inrow:
+            HourIn, containing current power demand, current power available
+            from each source, projected future load, etc.
+
+        rate:
+            The cost charged to Ontario customers in cents/kWh, can change
+            hourly.
+
+        nuclear:
+            Current amount of power supplied by nuclear.
+
+        value_func: {'cost': float, 'green': float, 'co2': float}
+            How to prioritize tradeoffs between lower costs, higher green
+            production, and lower co2 emissions.
+
+        debug:
+            If true, logs the matrices passed to the linear optimizer.
+    """
+
     ROWS = 16
     COLS = 7
     A = np.zeros((ROWS, COLS))

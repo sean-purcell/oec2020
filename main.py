@@ -4,6 +4,16 @@ import config
 import parse
 import optimizer
 
+def green(row):
+    return row.mw_drawn.solar + row.mw_drawn.hydro + row.mw_drawn.power + row.mw_drawn.biofuel
+
+def judge(rows):
+    green = sum(green(row) for row in rows)
+    print(green)
+    # price
+    # co2
+
+
 def main():
     (init, hours) = parse.parse_csv(open(sys.argv[1], 'r'))
 
