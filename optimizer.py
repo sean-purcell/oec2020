@@ -45,6 +45,7 @@ def optimize(inrow, rate, nuclear, value_func, debug=True):
     b[i] = -needed
     i += 1
 
+    poss = 0
     for j, s in enumerate(['solar', 'wind', 'hydro', 'gas', 'biofuel', 'buyable']):
         A[i][j] = 1
         b[i] = inrow.mw_available.__getattribute__(s)
@@ -56,6 +57,12 @@ def optimize(inrow, rate, nuclear, value_func, debug=True):
         c[j] = value_func['co2'] * config.EMISSIONS[s] + value_func['cost'] * config.PRICES[s]
         if s in ['hydro', 'wind', 'solar', 'biofuel']:
             c[j] += value_func['green']
+        poss += inrow.mw_available.__getattribute__(s)
+    if poss < needed:
+        used = inrow.mw_available
+        used = used._replace(nuclear=nuclear)
+        used = used._replace(total=sum(used[1:]))
+        return (used, 0)
 
     A[i][COLS-1] = 1
     b[i] = inrow.mw_sellable
