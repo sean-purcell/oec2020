@@ -5,7 +5,24 @@ from collections import namedtuple
 
 PowerRow = namedtuple('PowerRow', ['total', 'solar', 'nuclear', 'wind', 'hydro', 'gas', 'biofuel', 'buyable'])
 
-HourOut = namedtuple('HourOut', ['time', 'mw_drawn', 'mw_diff', 'mw_green', 'mw_bought', 'mw_sold', 'co2_out', 'price_selling', 'price_produce', 'price_diff'])
+class HourOut(namedtuple('HourOut', ['time', 'mw_drawn', 'mw_diff', 'mw_green', 'mw_bought', 'mw_sold', 'co2_out', 'price_selling', 'price_produce', 'price_diff'])):
+
+    def to_row(self):
+        # Outputs tuple of strings suitable for writing to csv
+        return list(map(str, (
+                2,
+                str(self.time) + ':00'
+               ) + self.mw_drawn + (
+                self.mw_diff,
+                self.mw_green,
+                self.mw_bought,
+                self.mw_sold,
+                self.co2_out,
+                self.price_selling,
+                self.price_produce,
+                self.price_diff,
+                -1
+               )))
 
 HourIn = namedtuple('HourIn', ['time', 'mw_available', 'temps', 'solar_coef', 'wind_coef', 'hydro_coef', 'mw_sellable', 'mw_sellable_price', 'historical_drawn'])
 
@@ -18,7 +35,7 @@ def parse_row(row):
     time = parse_time(row[1])
     mw = PowerRow(*map(float, row[2:10]))
 
-    if row[0] == '0':
+    if row[0] in ['0', '2']:
         args = ([time, mw] + list(map(float, row[10:row.index('-1')])))
         return HourOut(*args)
     elif row[0] == '1':
