@@ -1,3 +1,4 @@
+import csv
 import itertools
 
 from collections import namedtuple
@@ -26,6 +27,13 @@ def parse_row(row):
         args = [time, mw, temps] + list(map(float, row[15:20])) + [historical_drawn]
         return HourIn(*args)
 
-def parse_csv(row):
-    # return ([InitRow]], [InputRow])
-    pass
+def parse_csv(csv_file):
+    # return ([HourOut]], [HourIn])
+
+    reader = csv.reader(csv_file)
+
+    init_state = list(itertools.islice(reader, 3))
+    hour_inputs = list(map(parse_row, [x for x in reader if x[0]]))
+
+    return init_state, hour_inputs
+
