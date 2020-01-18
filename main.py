@@ -27,13 +27,17 @@ def gen_outrow(inrow, power_row, sold, rate):
         price_produce=price_produce,
         price_diff=(price_selling-price_produce))
 
-def green(row):
-    return row.mw_drawn.solar + row.mw_drawn.hydro + row.mw_drawn.power + row.mw_drawn.biofuel
-
-def judge(rows):
-    green = sum(green(row) for row in rows)
-    print(green)
-    # price
+def print_summary(rows):
+    # mean and max abs error
+    green = sum(row.mw_green for row in rows)
+    print('Produced {:,} green MW'.format(round(green, 2)))
+    # TODO: wait, how to weight price?
+    # price = sum(row.mw_green for row in rows)
+    co2 = sum(row.co2_out for row in rows)
+    print('Produced {:,} tonnes of CO2'.format(round(co2, 2)))
+    # price diff * MW-hrs
+    price = 1000 * sum(row.price_diff * row.mw_drawn.total for row in rows)
+    print('Total weighted price-diff: {:,}'.format(round(price, 2)))
     # co2
 
 def main():
@@ -49,11 +53,15 @@ def main():
         'green': float(sys.argv[4]),
     }
 
+    outrows = []
     for hour in hours:
         rate = config.consumer_rate(season, hour.time)
         power_row, sold = optimizer.optimize(hour, rate, nuclear, value_func, debug=False)
         outrow = gen_outrow(hour, power_row, sold, rate)
         writer.writerow(outrow.to_row())
+        outrows.append(outrow)
+
+    print_summary(outrows)
 
 if __name__ == '__main__':
     main()
