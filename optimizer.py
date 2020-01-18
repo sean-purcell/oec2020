@@ -49,7 +49,10 @@ def optimize(inrow, nuclear, value_func, debug=True):
         print(c)
 
     result = lp.LPSolver(A, b, c).solve()
-    result2 = spo.linprog(-c, A, b)
-    print(result)
-    print(result2)
+    # result2 = spo.linprog(-c, A, b)
+    if debug:
+        print(A)
+        print(b)
+        print(c)
+        print(result)
     return result
