@@ -7,8 +7,6 @@ import parse
 import config
 import optimizer
 
-optimize_co2 = (os.environ.get('OPT_CO2', '1') != '0')
-
 def clamp(value, minvalue, maxvalue):
     return max(minvalue, min(value, maxvalue))
 
@@ -48,9 +46,9 @@ def print_summary(rows):
 
     # Check for blackouts
     def did_blackout(outrow):
-        return outrow.mw_diff < 0
+        return outrow.mw_diff < -1e-3
 
-    n_blackouts = sum(map(did_blackout, rows))
+    n_blackouts = [row.time for row in rows if did_blackout(row)]
     print('Blackouts: {}'.format(n_blackouts))
 
 def main():
@@ -79,13 +77,21 @@ def main():
         print('Aiming for {} nuclear power'.format(predicted_needed))
         return predicted_needed
 
+    value_func = {'cost': -1, 'co2': -2, 'green': 0}
+    if len(sys.argv) > 3:
+        value_func = {
+            'cost': float(sys.argv[3]),
+            'co2': float(sys.argv[4]),
+            'green': float(sys.argv[5]),
+        }
+
     outrows = []
-    print('Optimize: {}'.format(optimize_co2))
     for hour in hours:
         rate = config.consumer_rate(season, hour.time)
         nuclear = clamp(target_nuclear(hour), nuclear * 0.99, nuclear*1.01)
-        power_row, sold = optimizer.optimize(hour, nuclear, {'cost': -1, 'co2': -2, 'green': 0}, debug=False)
+        power_row, sold = optimizer.optimize(hour, nuclear, value_func)
         outrow = gen_outrow(hour, power_row, sold, rate)
+        writer.writerow(outrow.to_row())
         outrows.append(outrow)
 
     print_summary(outrows)

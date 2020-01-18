@@ -1,11 +1,10 @@
 import numpy as np
-import scipy.optimize as spo
 
 import linear_programming as lp
 import config
 import parse
 
-def optimize(inrow, nuclear, value_func, rate=None, profit=None, debug=True):
+def optimize(inrow, nuclear, value_func):
     """
     Parameters:
         inrow:
@@ -28,8 +27,6 @@ def optimize(inrow, nuclear, value_func, rate=None, profit=None, debug=True):
     """
 
     ROWS = 16
-    if rate:
-        ROWS += 1
     COLS = 7
     A = np.zeros((ROWS, COLS))
     b = np.zeros((ROWS))
@@ -47,13 +44,6 @@ def optimize(inrow, nuclear, value_func, rate=None, profit=None, debug=True):
     b[i] = -needed
     i += 1
 
-    if rate:
-        nuclear_cost = nuclear * config.PRICES['nuclear']
-        for j, s in enumerate(['solar', 'wind', 'hydro', 'gas', 'biofuel', 'buyable']):
-            A[i][j] = config.PRICES[s]
-        A[i][-1] = inrow.mw_sellable_price * -1000
-        b[i] = rate * 10 * inrow.mw_available.total - profit - nuclear_cost
-        i += 1
 
     poss = 0
     for j, s in enumerate(['solar', 'wind', 'hydro', 'gas', 'biofuel', 'buyable']):
@@ -82,20 +72,7 @@ def optimize(inrow, nuclear, value_func, rate=None, profit=None, debug=True):
     i += 1
     c[COLS-1] = value_func['cost'] * inrow.mw_sellable_price * -1000
 
-    if debug:
-        print(A)
-        print(b)
-        print(c)
-
     result = lp.LPSolver(A, b, c).solve()
-    result2 = spo.linprog(-c, A, b)
-    if not (abs(result[1] + result2.fun) < 1e-3):
-        import pdb; pdb.set_trace()
-    if debug:
-        print(A)
-        print(b)
-        print(c)
-        print(result)
     # Create PowerRow
     used = {key: result[0][i] for i, key in enumerate(['solar', 'wind', 'hydro', 'gas', 'biofuel', 'buyable'])}
     used['nuclear'] = nuclear
