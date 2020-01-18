@@ -71,7 +71,8 @@ def optimize(inrow, rate, nuclear, value_func, debug=True):
         print(c)
 
     result = lp.LPSolver(A, b, c).solve()
-    # result2 = spo.linprog(-c, A, b)
+    result2 = spo.linprog(-c, A, b)
+    assert (abs(result[1] + result2.fun) < 1e-3)
     if debug:
         print(A)
         print(b)
