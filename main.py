@@ -1,18 +1,19 @@
 import sys
 import csv
 
+import config
 import parse
 import config
 import optimizer
 
-def gen_outrow(inrow, power_row, sold):
+def gen_outrow(inrow, power_row, sold, rate):
     co2_out = sum(
         power_row.__getattribute__(s) * config.EMISSIONS[s] / 1000. for s in
             ['solar', 'wind', 'nuclear', 'hydro', 'gas', 'biofuel', 'buyable'])
     dollars = sum(
         power_row.__getattribute__(s) * config.PRICES[s] for s in
             ['solar', 'wind', 'nuclear', 'hydro', 'gas', 'biofuel', 'buyable']) - sold * inrow.mw_sellable_price * 1000
-    price_selling = 0
+    price_selling = rate / 100
     price_produce = dollars / power_row.total / 1000
     return parse.HourOut(
         time=inrow.time,
@@ -22,7 +23,7 @@ def gen_outrow(inrow, power_row, sold):
         mw_bought=power_row.buyable,
         mw_sold=sold,
         co2_out=co2_out,
-        price_selling=0, # TODO PULL ADD CELINE'S THING
+        price_selling=price_selling, # TODO PULL ADD CELINE'S THING
         price_produce=price_produce,
         price_diff=(price_selling-price_produce))
 
@@ -30,6 +31,7 @@ def main():
     (init, hours) = parse.parse_csv(open(sys.argv[1], 'r'))
     writer = csv.writer(sys.stdout)
 
+    season = config.get_season(hours[0])
     nuclear = init[-1].mw_drawn.nuclear
 
     value_func = {
@@ -39,8 +41,9 @@ def main():
     }
 
     for hour in hours:
-        power_row, sold = optimizer.optimize(hour, nuclear, value_func, debug=False)
-        outrow = gen_outrow(hour, power_row, sold)
+        rate = config.consumer_rate(season, hour.time)
+        power_row, sold = optimizer.optimize(hour, rate, nuclear, value_func, debug=False)
+        outrow = gen_outrow(hour, power_row, sold, rate)
         writer.writerow(outrow.to_row())
 
 if __name__ == '__main__':

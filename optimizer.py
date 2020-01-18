@@ -5,7 +5,8 @@ import linear_programming as lp
 import config
 import parse
 
-def optimize(inrow, nuclear, value_func, debug=True):
+# rate: cost charged to Ontario consumers in cents/kWh, can change hourly
+def optimize(inrow, rate, nuclear, value_func, debug=True):
     ROWS = 16
     COLS = 7
     A = np.zeros((ROWS, COLS))
